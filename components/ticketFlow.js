@@ -415,13 +415,63 @@ async function buildSummaryEmbed(type, answers, user) {
 }
 
 export async function handleTicketClose(interaction) {
+  const modal = new ModalBuilder()
+    .setCustomId('ticket:closeModal')
+    .setTitle('Close Ticket');
+
+  modal.addComponents(
+    new ActionRowBuilder().addComponents(
+      new TextInputBuilder()
+        .setCustomId('reason')
+        .setLabel('Reason for closing')
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder('e.g. Trade completed')
+        .setRequired(false),
+    ),
+  );
+
+  await interaction.showModal(modal);
+}
+
+export async function handleTicketCloseModal(interaction) {
   const channel = interaction.channel;
+  const reason  = interaction.fields.getTextInputValue('reason').trim() || 'No reason provided';
+  const closer  = interaction.user;
+
+  // Find the ticket opener from channel topic or first mention
+  const topic     = channel.topic || '';
+  const ticketName = channel.name;
+
+  // DM the ticket opener — find their ID from channel permissions
+  const overwrite = channel.permissionOverwrites.cache.find(
+    o => o.type === 1 && o.id !== closer.id
+  );
+
+  if (overwrite) {
+    const openerId = overwrite.id;
+    const opener   = await interaction.client.users.fetch(openerId).catch(() => null);
+    if (opener) {
+      const dmEmbed = new EmbedBuilder()
+        .setColor(COLORS.danger)
+        .setTitle('🔒 Your Ticket Has Been Closed')
+        .addFields(
+          { name: 'Ticket',    value: ticketName,     inline: true },
+          { name: 'Closed by', value: closer.username, inline: true },
+          { name: 'Reason',    value: reason },
+        )
+        .setTimestamp();
+
+      await opener.send({ embeds: [dmEmbed] }).catch(() => {});
+    }
+  }
+
   await interaction.reply({
     embeds: [
       new EmbedBuilder()
         .setColor(COLORS.danger)
-        .setDescription('🔒 This ticket will be deleted in **5 seconds**.'),
+        .setDescription(),
     ],
   });
+
   setTimeout(() => channel.delete().catch(() => {}), 5000);
 }
