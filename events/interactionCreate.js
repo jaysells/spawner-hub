@@ -1,5 +1,5 @@
 // events/interactionCreate.js
-import { handleTicketButton, handleTicketStep, handleTicketClose, handleTicketModal } from '../components/ticketFlow.js';
+import { handleTicketButton, handleTicketStep, handleTicketClose, handleTicketModal, handleTicketCloseModal } from '../components/ticketFlow.js';
 import { handleSelect as updateStockSelect, handleModal as updateStockModal } from '../commands/updatestock.js';
 import { handleRerollSelect } from '../commands/reroll.js';
 import { handleModal as banModal } from '../commands/ban.js';
@@ -39,6 +39,7 @@ export async function execute(interaction, client) {
       if (interaction.customId === 'ban:modal')          return banModal(interaction);
       if (interaction.customId === 'kick:modal')         return kickModal(interaction);
       if (interaction.customId === 'timeout:modal')      return timeoutModal(interaction);
+      if (interaction.customId === 'ticket:closeModal') return handleTicketCloseModal(interaction);
       if (interaction.customId.startsWith('ticket:') && interaction.customId.endsWith('Modal')) {
         return handleTicketModal(interaction);
       }
