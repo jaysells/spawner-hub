@@ -1,5 +1,5 @@
 // events/interactionCreate.js
-import { handleTicketButton, handleTicketStep, handleTicketClose, handleTicketModal, handleTicketCloseModal } from '../components/ticketFlow.js';
+import { handleTicketButton, handleTicketStep, handleTicketClose, handleTicketModal, handleTicketCloseModal, handleStockPanel } from '../components/ticketFlow.js';
 import { handleSelect as updateStockSelect, handleModal as updateStockModal } from '../commands/updatestock.js';
 import { handleRerollSelect } from '../commands/reroll.js';
 import { handleModal as banModal } from '../commands/ban.js';
@@ -23,6 +23,7 @@ export async function execute(interaction, client) {
         if (action === 'close') return handleTicketClose(interaction);
         return handleTicketButton(interaction, action);
       }
+      if (ns === 'stockpanel') return handleStockPanel(interaction, action);
     }
 
     if (interaction.isStringSelectMenu()) {
