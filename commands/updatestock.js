@@ -91,7 +91,7 @@ export async function handleSelect(interaction) {
     new ActionRowBuilder().addComponents(
       new TextInputBuilder()
         .setCustomId('bulkPrice')
-        .setLabel('Bulk Sell Price (optional, e.g. 512+ discount)')
+        .setLabel('Bulk Price (e.g. 512+ discount, optional)')
         .setStyle(TextInputStyle.Short)
         .setRequired(false)
         .setPlaceholder('Leave blank if no bulk price'),
@@ -99,7 +99,7 @@ export async function handleSelect(interaction) {
     new ActionRowBuilder().addComponents(
       new TextInputBuilder()
         .setCustomId('buyCap')
-        .setLabel('Buy Cap (max you buy from one person, optional)')
+        .setLabel('Buy Cap per person (optional)')
         .setStyle(TextInputStyle.Short)
         .setRequired(false)
         .setPlaceholder('Leave blank for unlimited'),
