@@ -59,9 +59,9 @@ const pendingChannels = new Map();
 export async function handleSelect(interaction) {
   const spawnerId = interaction.values[0];
   const spawner   = SPAWNERS.find(s => s.id === spawnerId);
-  const stock     = await getStock();
-  const cur       = stock[spawnerId] || {};
 
+  // Show modal immediately — no Redis fetch before, Discord requires response within 3s
+  // Fields will be empty but that's fine; current values aren't worth risking a timeout
   const modal = new ModalBuilder()
     .setCustomId(`updatestock:modal:${spawnerId}`)
     .setTitle(`Update ${spawner.label}`);
@@ -72,7 +72,6 @@ export async function handleSelect(interaction) {
         .setCustomId('count')
         .setLabel('Stock Count (how many you have to sell)')
         .setStyle(TextInputStyle.Short)
-        .setValue(cur.count != null ? String(cur.count) : '')
         .setRequired(true),
     ),
     new ActionRowBuilder().addComponents(
@@ -80,7 +79,6 @@ export async function handleSelect(interaction) {
         .setCustomId('sellPrice')
         .setLabel('Sell Price (what members pay you)')
         .setStyle(TextInputStyle.Short)
-        .setValue(cur.sellPrice != null ? String(cur.sellPrice) : '')
         .setRequired(true),
     ),
     new ActionRowBuilder().addComponents(
@@ -88,7 +86,6 @@ export async function handleSelect(interaction) {
         .setCustomId('buyPrice')
         .setLabel('Buy Price (what you pay members)')
         .setStyle(TextInputStyle.Short)
-        .setValue(cur.buyPrice != null ? String(cur.buyPrice) : '')
         .setRequired(true),
     ),
     new ActionRowBuilder().addComponents(
@@ -96,7 +93,6 @@ export async function handleSelect(interaction) {
         .setCustomId('bulkPrice')
         .setLabel('Bulk Sell Price (optional, e.g. 512+ discount)')
         .setStyle(TextInputStyle.Short)
-        .setValue(cur.bulkPrice != null ? String(cur.bulkPrice) : '')
         .setRequired(false)
         .setPlaceholder('Leave blank if no bulk price'),
     ),
@@ -105,7 +101,6 @@ export async function handleSelect(interaction) {
         .setCustomId('buyCap')
         .setLabel('Buy Cap (max you buy from one person, optional)')
         .setStyle(TextInputStyle.Short)
-        .setValue(cur.buyCap != null ? String(cur.buyCap) : '')
         .setRequired(false)
         .setPlaceholder('Leave blank for unlimited'),
     ),
