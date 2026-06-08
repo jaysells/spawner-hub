@@ -15,6 +15,17 @@ export async function handleTicketButton(interaction, type) {
   await sendStep(interaction, interaction.user.id);
 }
 
+// ── Stock panel buy/sell buttons (skip to spawner step) ────────
+export async function handleStockPanel(interaction, direction) {
+  // Pre-fill direction, jump straight to spawner select (step 1)
+  sessions.set(interaction.user.id, {
+    type: 'trade',
+    step: 1,
+    answers: { direction },
+  });
+  await sendStep(interaction, interaction.user.id);
+}
+
 // ── Dropdown selections ────────────────────────────────────────
 export async function handleTicketStep(interaction) {
   const userId  = interaction.user.id;
