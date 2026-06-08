@@ -1,6 +1,6 @@
 // commands/giveaway.js
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
-import { saveGiveaway } from '../utils/redis.js';
+import { saveGiveaway, getGiveaway } from '../utils/redis.js';
 import { COLORS, isOwner } from '../utils/constants.js';
 import { randomUUID } from 'crypto';
 
@@ -58,8 +58,6 @@ export async function execute(interaction) {
 }
 
 export async function endGiveaway(client, giveaway) {
-  const { getGiveaway, saveGiveaway } = await import('../utils/redis.js');
-
   // Re-fetch to get latest entries
   const fresh = await getGiveaway(giveaway.id);
   if (!fresh || !fresh.active) return;
