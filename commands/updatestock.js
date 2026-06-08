@@ -4,7 +4,7 @@ import {
   ActionRowBuilder, StringSelectMenuBuilder, ModalBuilder,
   TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle,
 } from 'discord.js';
-import { getStock, setStock } from '../utils/redis.js';
+import { getStock, setStock, redis } from '../utils/redis.js';
 import { SPAWNERS, COLORS, isOwner, fmt } from '../utils/constants.js';
 
 export const data = new SlashCommandBuilder()
@@ -169,7 +169,6 @@ export async function handleModal(interaction, spawnerId) {
 
 // ── Build and post (or edit) the stock embed ───────────────────
 // We store the last posted message ID in Redis so we can edit it
-import { redis } from '../utils/redis.js';
 
 export async function postStockEmbed(channel, stock, client) {
   const { embed, row } = buildStockEmbed(stock);
