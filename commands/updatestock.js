@@ -116,15 +116,15 @@ export async function handleSelect(interaction) {
 
 export async function handleModal(interaction, spawnerId) {
   const spawner   = SPAWNERS.find(s => s.id === spawnerId);
-  const count     = parseInt(interaction.fields.getTextInputValue('count'));
-  const sellPrice = parseInt(interaction.fields.getTextInputValue('sellPrice'));
-  const buyPrice  = parseInt(interaction.fields.getTextInputValue('buyPrice'));
+  const count     = interaction.fields.getTextInputValue('count').trim();
+  const sellPrice = interaction.fields.getTextInputValue('sellPrice').trim();
+  const buyPrice  = interaction.fields.getTextInputValue('buyPrice').trim();
   const bulkRaw   = interaction.fields.getTextInputValue('bulkPrice').trim();
   const buyCap    = interaction.fields.getTextInputValue('buyCap').trim();
-  const bulkPrice = bulkRaw ? parseInt(bulkRaw) : null;
+  const bulkPrice = bulkRaw || null;
 
-  if (isNaN(count) || isNaN(sellPrice) || isNaN(buyPrice)) {
-    return interaction.reply({ content: '❌ Stock count and prices must be valid numbers.', ephemeral: true });
+  if (!count || !sellPrice || !buyPrice) {
+    return interaction.reply({ content: '❌ Stock count and prices cannot be empty.', ephemeral: true });
   }
 
   const stock = await getStock();
@@ -155,10 +155,10 @@ export async function handleModal(interaction, spawnerId) {
         .setTitle('✅ Stock Updated')
         .addFields(
           { name: 'Spawner',    value: `${spawner.emoji} ${spawner.label}`, inline: true },
-          { name: 'Stock',      value: `${fmt(count)}`,                      inline: true },
-          { name: 'Sell Price', value: `$${fmt(sellPrice)} ea`,              inline: true },
-          { name: 'Buy Price',  value: `$${fmt(buyPrice)} ea`,               inline: true },
-          ...(bulkPrice ? [{ name: 'Bulk Price', value: `$${fmt(bulkPrice)} ea (512+)`, inline: true }] : []),
+          { name: 'Stock',      value: count,                                 inline: true },
+          { name: 'Sell Price', value: `${sellPrice} ea`,                    inline: true },
+          { name: 'Buy Price',  value: `${buyPrice} ea`,                     inline: true },
+          ...(bulkPrice ? [{ name: 'Bulk Price', value: `${bulkPrice} ea (512+)`, inline: true }] : []),
           { name: 'Buy Cap',    value: buyCap ? `${buyCap} per person` : 'Unlimited', inline: true },
         )
         .setFooter({ text: `Updated by ${interaction.user.tag}` })
@@ -190,31 +190,22 @@ export async function postStockEmbed(channel, stock, client) {
   await redis.set('sh:stockMsgId', msg.id);
 }
 
-function fmtPrice(n) {
-  if (!n && n !== 0) return 'N/A';
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2).replace(/\.?0+$/, '')}M`;
-  if (n >= 1_000)     return `${(n / 1_000).toFixed(1).replace(/\.?0+$/, '')}K`;
-  return String(n);
-}
-
 function buildStockEmbed(stock) {
   // ── Buying section (we buy from members) ──
   const buyingLines = SPAWNERS.map(s => {
     const d = stock[s.id];
     if (!d?.buyPrice) return null;
-    const bulk = d.bulkPrice ? ` · Bulk 512+: **${fmtPrice(d.bulkPrice)} each**` : '';
-    return `${s.emoji} **${s.label}s** — **${fmtPrice(d.buyPrice)} each**${bulk}`;
+    const bulk = d.bulkPrice ? ` · Bulk 512+: **${d.bulkPrice} each**` : '';
+    return `${s.emoji} **${s.label}s** — **${d.buyPrice} each**${bulk}`;
   }).filter(Boolean);
 
   // ── Selling section (we sell to members) ──
   const sellingLines = SPAWNERS.map(s => {
     const d = stock[s.id];
     if (!d?.sellPrice) return null;
-    const bulk    = d.bulkPrice ? ` · Bulk 512+: **${fmtPrice(d.bulkPrice)} each**` : '';
-    const stockLine = d.count != null
-      ? `\n> 📦 Stock: **${fmtPrice(d.count)} spawners available**`
-      : '';
-    return `${s.emoji} **${s.label}s** — **${fmtPrice(d.sellPrice)} each**${bulk}${stockLine}`;
+    const bulk      = d.bulkPrice ? ` · Bulk 512+: **${d.bulkPrice} each**` : '';
+    const stockLine = d.count ? `\n> 📦 Stock: **${d.count} spawners available**` : '';
+    return `${s.emoji} **${s.label}s** — **${d.sellPrice} each**${bulk}${stockLine}`;
   }).filter(Boolean);
 
   const description = [
