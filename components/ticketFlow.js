@@ -374,7 +374,6 @@ async function buildSummaryEmbed(type, answers, user) {
     const qty     = answers.quantity;
     const dir     = answers.direction;
     const price   = dir === 'buy' ? data.sellPrice : data.buyPrice;
-    const total   = price ? price * qty : null;
 
     return new EmbedBuilder()
       .setColor(dir === 'buy' ? COLORS.success : COLORS.danger)
@@ -384,8 +383,7 @@ async function buildSummaryEmbed(type, answers, user) {
         { name: 'Spawner',   value: `${spawner?.emoji ?? ''} ${spawner?.label ?? answers.spawnerId}`, inline: true },
         { name: 'Quantity',  value: `${qty}`, inline: true },
         { name: dir === 'buy' ? 'Our Sell Price' : 'Our Buy Price',
-          value: price ? `$${fmt(price)} ea` : '⚠️ Not set', inline: true },
-        { name: 'Total',     value: total ? `$${fmt(total)}` : '⚠️ Price not set', inline: true },
+          value: price ? `${price} ea` : '⚠️ Not set', inline: true },
         { name: 'Username',  value: answers.username, inline: true },
         { name: 'Terms',     value: '✅ Accepted', inline: true },
       )
