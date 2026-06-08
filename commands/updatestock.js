@@ -185,54 +185,60 @@ export async function postStockEmbed(channel, stock, client) {
 }
 
 function buildStockEmbed(stock) {
-  // ── Buying section (we buy from members) ──
-  const buyingLines = SPAWNERS.map(s => {
+  // ── We buy from members ──
+  const weBuyLines = SPAWNERS.map(s => {
     const d = stock[s.id];
     if (!d?.buyPrice) return null;
-    const bulk = d.bulkPrice ? ` · Bulk 512+: **${d.bulkPrice} each**` : '';
-    return `${s.emoji} **${s.label}s** — **${d.buyPrice} each**${bulk}`;
+    const bulk = d.bulkPrice ? `  \`512+\` ${d.bulkPrice}` : '';
+    return `${s.emoji}  ${s.label.replace(' Spawner', '')}  ·  **${d.buyPrice}**${bulk}`;
   }).filter(Boolean);
 
-  // ── Selling section (we sell to members) ──
-  const sellingLines = SPAWNERS.map(s => {
+  // ── We sell to members ──
+  const weSellLines = SPAWNERS.map(s => {
     const d = stock[s.id];
     if (!d?.sellPrice) return null;
-    const bulk      = d.bulkPrice ? ` · Bulk 512+: **${d.bulkPrice} each**` : '';
-    const stockLine = d.count ? `\n> 📦 Stock: **${d.count} spawners available**` : '';
-    return `${s.emoji} **${s.label}s** — **${d.sellPrice} each**${bulk}${stockLine}`;
+    const bulk  = d.bulkPrice ? `  \`512+\` ${d.bulkPrice}` : '';
+    const avail = d.count ? `
+╰ \`${d.count} in stock\`` : '';
+    return `${s.emoji}  ${s.label.replace(' Spawner', '')}  ·  **${d.sellPrice}**${bulk}${avail}`;
   }).filter(Boolean);
 
+  const sep = '─────────────────────';
+
   const description = [
-    '**Buying:** *(You sell to us)*',
-    buyingLines.length ? buyingLines.join('\n') : '*No buy prices set yet*',
+    '**— WE BUY FROM YOU —**',
+    weBuyLines.length ? weBuyLines.join('\n') : '*Not buying right now*',
     '',
-    '**Selling:** *(We sell to you)*',
-    sellingLines.length ? sellingLines.join('\n') : '*No sell prices set yet*',
+    sep,
     '',
-    '▸ **16 spawners minimum** to sell',
-    '▸ We do **not** go first',
-    '▸ We do **not** negotiate on prices',
+    '**— WE SELL TO YOU —**',
+    weSellLines.length ? weSellLines.join('\n') : '*Nothing for sale right now*',
     '',
-    '*Open a ticket below to buy or sell spawners.*',
+    sep,
+    '',
+    '> ⚠️ **10 spawners minimum** to sell to us',
+    '> ❌ We do **not** go first',
+    '',
+    '-# Use the buttons below to open a trade ticket',
   ].join('\n');
 
   const embed = new EmbedBuilder()
-    .setColor(0x2b2d31)
-    .setTitle('🦴 Spawner Prices')
+    .setColor(0xe8b86d)
+    .setAuthor({ name: 'Spawner Hub  ·  Live Prices' })
     .setDescription(description)
-    .setFooter({ text: `Spawner Hub • Last updated` })
-    .setTimestamp();
+    .setTimestamp()
+    .setFooter({ text: 'Prices update automatically when stock changes' });
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('stockpanel:sell')
-      .setLabel('Sell Spawners')
-      .setEmoji('⬆️')
+      .setLabel('Sell to Us')
+      .setEmoji('📤')
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId('stockpanel:buy')
-      .setLabel('Buy Spawners')
-      .setEmoji('⬇️')
+      .setLabel('Buy from Us')
+      .setEmoji('📥')
       .setStyle(ButtonStyle.Primary),
   );
 
